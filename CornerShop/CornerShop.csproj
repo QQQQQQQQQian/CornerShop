@@ -14,10 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="UserControls\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\CornerShop.Core\CornerShop.Core.csproj" />
   </ItemGroup>
 

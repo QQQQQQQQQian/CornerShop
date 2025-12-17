@@ -5,8 +5,108 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CornerShop"
         mc:Ignorable="d"
-        Title="Corner Shop" Height="400" Width="400" WindowStartupLocation="CenterScreen" Background="#FFF7F7F7">
-    <Grid Margin="20">
+        Title="Corner Shop" Height="500" Width="800" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" FontFamily="Segoe UI" Background="#FFF7F7F7">
+
+    <Window.Resources>
+
+        <Style x:Key="ModernInputBox" TargetType="Control">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="BorderBrush" Value="#DDDDDD"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#F9F9F9"/>
+        </Style>
+
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                CornerRadius="8" 
+                                Background="{TemplateBinding Background}" 
+                                BorderThickness="0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#667EEA" Offset="0.0"/>
+                <GradientStop Color="#764BA2" Offset="1.0"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Border Width="380" Height="450" 
+                Background="White" 
+                CornerRadius="15"
+                VerticalAlignment="Center" HorizontalAlignment="Center">
+
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="30" ShadowDepth="5" Opacity="0.3" Color="Black"/>
+            </Border.Effect>
+
+            <StackPanel Margin="30">
+
+                <TextBlock Text="Welcome Back" 
+                           FontSize="28" FontWeight="Bold" Foreground="#333333" 
+                           HorizontalAlignment="Center" Margin="0,10,0,5"/>
+
+                <TextBlock Text="Please login to your account" 
+                           FontSize="14" Foreground="#888888" 
+                           HorizontalAlignment="Center" Margin="0,0,0,30"/>
+
+                <TextBlock Text="Username" FontWeight="SemiBold" Foreground="#555555" Margin="0,0,0,5"/>
+                <TextBox x:Name="UserBox" Style="{StaticResource ModernInputBox}" Margin="0,0,0,15"/>
+
+                <TextBlock Text="Password" FontWeight="SemiBold" Foreground="#555555" Margin="0,0,0,5"/>
+                <PasswordBox x:Name="PasswordBox" Style="{StaticResource ModernInputBox}" Margin="0,0,0,30"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" 
+                            Content="Login" 
+                            Click="Login_Click"
+                            Style="{StaticResource ModernButton}"
+                            Background="#00B894"/>
+
+                    <Button Grid.Column="2" 
+                            Content="Register" 
+                            Click="Register_Click"
+                            Style="{StaticResource ModernButton}"
+                            Background="#6C5CE7"/>
+                </Grid>
+
+            </StackPanel>
+        </Border>
+
+
+        <!--<Grid Margin="20">
         <Border CornerRadius="10" Background="White" Padding="30">
             <StackPanel VerticalAlignment="Center">
 
@@ -34,7 +134,7 @@
                     <TextBox.Tag>Username</TextBox.Tag>
                 </TextBox>
 
-                <!-- Password -->
+                --><!-- Password --><!--
                 <PasswordBox x:Name="PasswordBox"
                              Height="35"
                              Margin="0,0,0,20"
@@ -66,6 +166,6 @@
                         Cursor="Hand"
                         Click="Register_Click"/>
             </StackPanel>
-        </Border>
+        </Border>-->
     </Grid>
 </Window>

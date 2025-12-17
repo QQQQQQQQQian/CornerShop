@@ -4,27 +4,25 @@ using System.Linq;
 using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
-using CornerShop.Models;
+using CornerShop.Core.Models;
 using MongoDB.Driver;
 
 
-namespace CornerShop.Data
+namespace CornerShop.Core.Data
 {
     public class ShopRepository
     {
 
         private readonly IMongoCollection<User> _users;
         private readonly IMongoCollection<Product> _products;
-        //
-        private const string ConnectionString = "mongodb+srv://admin:xxxxx@cluster0.xxxxx.mongodb.net/corner_shop_db?retryWrites=true&w=majority";
-
-        private const string DatabaseName = "corner_shop_db"; // make sure the name is same with the one up
-        public ShopRepository()
+       
+        private const string DatabaseName = "CornerShopDB";
+        public ShopRepository(string connectionString)
         {
-            var settings = MongoClientSettings.FromUrl(new MongoUrl(ConnectionString));
+            var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
             settings.SslSettings = new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
             var client = new MongoClient(settings);
-            var database = client.GetDatabase(DatabaseName);
+            var database = client.GetDatabase("CornerShopDB");
             _users = database.GetCollection<User>("Users");
             _products = database.GetCollection<Product>("Products");
             SeedData();
@@ -39,6 +37,7 @@ namespace CornerShop.Data
                     new Product { Name = "Banana", Price = 20, Category = ProductCategory.Fruit, Stock = 100 },
                     new Product { Name = "Cola", Price = 15, Category = ProductCategory.Beverage, Stock = 200 },
                     new Product { Name = "Steak", Price = 150, Category = ProductCategory.Meat, Stock = 50 },
+                    new Product { Name = "Carrot", Price = 10,  Category = ProductCategory.Vegetable , Stock=100}
                 };
                 _products.InsertMany(products);
             }
@@ -49,9 +48,43 @@ namespace CornerShop.Data
                     Username = "admin",
                     Password = "123",
                     Role = UserRole.Admin,
-                    Level = UserLevel.Standard
+                    Level = UserLevel.Standard,
+                    Cart = new List<CartItem>()
                 };
                 _users.InsertOne(adminUser);
+            }
+            if (!_users.Find(u => u.Username == "Knatte").Any())
+            {
+                _users.InsertOne(new User
+                {
+                    Username = "Knatte",
+                    Password = "123",
+                    Role = UserRole.Customer,
+                    Level = UserLevel.Bronze,
+                    Cart = new List<CartItem>()
+                });
+            }
+            if(!_users.Find(u=>u.Username == "Fnatte").Any())
+            {
+                _users.InsertOne(new User
+                {
+                    Username = "Fnatte",
+                    Password = "321",
+                    Role = UserRole.Customer,
+                    Level = UserLevel.Silver,
+                    Cart = new List<CartItem>()
+                });
+            }
+            if(!_users.Find(u=> u.Username =="Tjatte").Any())
+            {
+                _users.InsertOne(new User
+                {
+                    Username = "Tjatte",
+                    Password = "213",
+                    Role = UserRole.Customer,
+                    Level = UserLevel.Gold,
+                    Cart = new List<CartItem>()
+                });
             }
         }
         //User Operations
@@ -59,7 +92,11 @@ namespace CornerShop.Data
         {
             return await _users.Find(u => u.Username == userName && u.Password == password).FirstOrDefaultAsync();
         }
-
+        public async Task<bool>UserExistsAsync(string username)
+        {
+            var user= await _users.Find(u=>u.Username==username).FirstOrDefaultAsync();
+            return user!=null;
+        }
         public async Task<User> RegisterAsync(string userName, string password)
         {
             var existingUser = await _users.Find(u => u.Username == userName).FirstOrDefaultAsync();
@@ -72,7 +109,8 @@ namespace CornerShop.Data
                 Username = userName,
                 Password = password,
                 Role = UserRole.Customer,
-                Level = UserLevel.Standard
+                Level = UserLevel.Standard,
+                Cart= new List<CartItem>()
             };
             await _users.InsertOneAsync(newUser);
             return newUser;
@@ -139,11 +177,15 @@ namespace CornerShop.Data
                 _ => 0m,
             };
         }
+        public async Task<User> GetUserByIdAsync(string userId)
+        {
+            return await _users.Find(u=>u.Id == userId).FirstOrDefaultAsync();
+        }
         //Product Operations
 
 
-        //Add product
-        public async Task AddNewProductAsync(Product product)
+        //API CRUD
+        public async Task AddProductAsync(Product product)
         {
             await _products.InsertOneAsync(product);
         }

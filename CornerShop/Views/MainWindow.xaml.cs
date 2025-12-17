@@ -1,5 +1,6 @@
-﻿using CornerShop.Data;
-using CornerShop.Models;
+﻿using CornerShop.Core.Data;
+using CornerShop.Core.Models;
+using CornerShop.ViewModels;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Diagnostics;
 
 namespace CornerShop
 {
@@ -18,68 +20,80 @@ namespace CornerShop
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly ShopRepository _repo;
+        
+        private MainViewModel _viewModel;
         public MainWindow()
         {
             InitializeComponent();
-            _repo = new ShopRepository();
+            _viewModel = new MainViewModel();
+            _viewModel.OnLoginSuccess += (user) =>
+            {
+                OpenNextWindow(user);
+            };
+            this.DataContext = _viewModel;
         }
         private async void Login_Click(object sender, RoutedEventArgs e)
         {
-            string username = UsernameBox.Text;
-            string password = PasswordBox.Password;
-
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            try
             {
-                MessageBox.Show("Please enter username and password.");
-                return;
+                await _viewModel.LoginAsync(UserBox.Text, PasswordBox.Password);
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show("An error occurred during login: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            var user = await _repo.LoginAsync(username, password);
-
-            if (user == null)
-            {
-                MessageBox.Show("Invalid username or password.");
-                return;
-            }
-
-            OpenNextWindow(user);
         }
         private async void Register_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                var user = await _repo.RegisterAsync(
-                    UsernameBox.Text,
-                    PasswordBox.Password);
+               
+                string username = UserBox.Text;
+                string password = PasswordBox.Password;
+                await _viewModel.RegisterAsync(username, password);
 
-                MessageBox.Show("Registration successful!");
-                OpenNextWindow(user);
+                MessageBox.Show("Registration successful! You can now log in.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
         private void OpenNextWindow(User user)
         {
-            Window nextWindow;
+            var repo = new ShopRepository(DBConfig.ConnectionString);
 
             if (user.Role == UserRole.Admin)
             {
-                nextWindow = new AdminWindow(user);
+                OpenAdminApi();
+                return;
             }
             else
             {
-                nextWindow = new ShopWindow(user);
+                var reopo = new ShopRepository(DBConfig.ConnectionString);
+                var shopWindow = new ShopWindow(user, repo);
+                shopWindow.Show();
             }
-
-            nextWindow.Show();
             this.Close();
         }
-    
+        private void OpenAdminApi()
+        {
+            try
+            {
+                MessageBox.Show("Logged in as Admin.\nOpening API Documentation...");
+                string url = DBConfig.AdminApiUrl;
 
-
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                });
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show("Failed to open browser: " + ex.Message);
+            }
+        }
     }
 }

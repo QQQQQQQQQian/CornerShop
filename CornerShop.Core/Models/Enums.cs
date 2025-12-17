@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CornerShop.Models
+namespace CornerShop.Core.Models
 {
 
     public enum ProductCategory
